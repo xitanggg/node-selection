@@ -24,12 +24,12 @@ const selectionText = getSelectionText();
 
 **Customized Usage**
 
-`getSelectionText` accepts an optional `copyWaitTimeMs` input argument, which sets how long to wait after performing the copy operation before reading the clipboard text. It defaults to 1ms, which works for most use cases with small selection text. However, a larger value would be needed to support use case for large selection text that takes longer to copy.
+`getSelectionText` accepts an optional `copyWaitTimeMs` input argument, which sets how long to wait after performing the copy operation before reading the clipboard text. It defaults to 5ms, which works for most use cases with small selection text. However, a larger value would be needed to support use case for large selection text that takes longer to copy.
 
 ```typescript
 import { getSelectionText } from '@xitanggg/node-selection;
 
-const LONG_COPY_WAIT_TIME_MS = 5;
+const LONG_COPY_WAIT_TIME_MS = 10;
 const selectionText = getSelectionText(LONG_COPY_WAIT_TIME_MS);
 ```
 
@@ -42,7 +42,7 @@ The implementation is written in Rust and is ~10 lines of code (see `/src/lib.rs
 The selection text is retrieved in a 3 steps processes:
 
 1. Save clipboard existing text and clear clipboard
-2. Simulate `Ctrl + C` keyboard input to copy selection text to clipboard
+2. Simulate `Ctrl + C` (`Cmd + C` in Mac) keyboard input to copy selection text to clipboard
 3. Read clipboard to retrieve selection text and return it as result (the previous clipboard text is restored before returning to minimize side effects to users)
 
 **Dependency**

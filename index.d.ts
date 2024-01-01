@@ -8,13 +8,13 @@
  *
  * The selection text is retrieved in a 3 steps processes:
  * 1. Save clipboard existing text and clear clipboard
- * 2. Simulate `Ctrl + C` keyboard input to copy selection text to clipboard
+ * 2. Simulate `Ctrl + C` (`Cmd + C` in Mac) keyboard input to copy selection text to clipboard
  * 3. Read clipboard to retrieve selection text and return it as result
  * (the previous clipboard text is restored before returning to minimize side effects to users)
  *
  * ##### Arguments
  * * `copyWaitTimeMs` - An optional number that sets how long to wait after performing the copy
- *                      operation before reading the clipboard text. It defaults to 1ms, which
+ *                      operation before reading the clipboard text. It defaults to 5ms, which
  *                      works for most use cases with small selection text. However, a larger value
  *                      would be needed to support use case for large selection text that takes
  *                      longer to copy to the clipboard.
