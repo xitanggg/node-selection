@@ -18,7 +18,8 @@ static DEFAULT_COPY_WAIT_TIME_MS: u32 = 5;
 /// 1. Save clipboard existing text and clear clipboard
 /// 2. Simulate `Ctrl + C` (`Cmd + C` in Mac) keyboard input to copy selection text to clipboard
 /// 3. Read clipboard to retrieve selection text and return it as result 
-/// (the previous clipboard text is restored before returning to minimize side effects to users) 
+/// (The previous clipboard text is restored before returning to minimize side effects to users.
+///  Note: clipboard image/html restoration is not supported at the moment) 
 /// 
 /// ##### Arguments
 /// * `copyWaitTimeMs` - An optional number that sets how long to wait after performing the copy
@@ -37,15 +38,7 @@ pub fn get_selection_text(copy_wait_time_ms: Option<u32>) -> String {
   clipboard.clear().unwrap();
 
   // Simulate Ctrl/Cmd + C keyboard input to copy selection text to clipboard
-  let mut enigo = Enigo::new(&Settings::default()).unwrap();
-  let control_or_command_key = if cfg!(target_os = "macos") {
-    Key::Meta
-  } else {
-    Key::Control
-  };
-  enigo.key(control_or_command_key, Press).unwrap();
-  enigo.key(Key::Unicode('c'), Click).unwrap();
-  enigo.key(control_or_command_key, Release).unwrap();
+  copy();
   
   // Wait for clipboard to be updated with copied selection text
   thread::sleep(time::Duration::from_millis(u64::from(copy_wait_time_ms.unwrap_or(DEFAULT_COPY_WAIT_TIME_MS))));
@@ -59,4 +52,21 @@ pub fn get_selection_text(copy_wait_time_ms: Option<u32>) -> String {
   }
 
   return selection_text;
+}
+
+/// Simulate Ctrl/Cmd + C keyboard input to copy selection text to clipboard
+/// 
+/// Useful if you only want to perform copy and handle clipboard saving and restoring yourself
+/// so you can save & restore different clipboard data types e.g. text, html, image, etc. 
+#[napi]
+pub fn copy(){
+  let mut enigo = Enigo::new(&Settings::default()).unwrap();
+  let control_or_command_key = if cfg!(target_os = "macos") {
+    Key::Meta
+  } else {
+    Key::Control
+  };
+  enigo.key(control_or_command_key, Press).unwrap();
+  enigo.key(Key::Unicode('c'), Click).unwrap();
+  enigo.key(control_or_command_key, Release).unwrap();
 }

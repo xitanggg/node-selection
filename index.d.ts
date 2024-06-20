@@ -10,7 +10,8 @@
  * 1. Save clipboard existing text and clear clipboard
  * 2. Simulate `Ctrl + C` (`Cmd + C` in Mac) keyboard input to copy selection text to clipboard
  * 3. Read clipboard to retrieve selection text and return it as result
- * (the previous clipboard text is restored before returning to minimize side effects to users)
+ * (The previous clipboard text is restored before returning to minimize side effects to users.
+ *  Note: clipboard image/html restoration is not supported at the moment)
  *
  * ##### Arguments
  * * `copyWaitTimeMs` - An optional number that sets how long to wait after performing the copy
@@ -20,3 +21,10 @@
  *                      longer to copy to the clipboard.
  */
 export function getSelectionText(copyWaitTimeMs?: number | undefined | null): string
+/**
+ * Simulate Ctrl/Cmd + C keyboard input to copy selection text to clipboard
+ *
+ * Useful if you only want to perform copy and handle clipboard saving and restoring yourself
+ * so you can save & restore different clipboard data types e.g. text, html, image, etc.
+ */
+export function copy(): void

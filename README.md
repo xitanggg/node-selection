@@ -43,9 +43,9 @@ The selection text is retrieved in a 3 steps processes:
 
 1. Save clipboard existing text and clear clipboard
 2. Simulate `Ctrl + C` (`Cmd + C` in Mac) keyboard input to copy selection text to clipboard
-3. Read clipboard to retrieve selection text and return it as result (the previous clipboard text is restored before returning to minimize side effects to users)
+3. Read clipboard to retrieve selection text and return it as result (The previous clipboard text is restored before returning to minimize side effects to users. Note: clipboard image/html restoration is not supported at the moment)
 
-**Dependency**
+**Dependencies**
 
 It uses [Arboard (Arthur's Clipboard)](https://github.com/1Password/arboard) to perform clipboard operation and [enigo](https://github.com/enigo-rs/enigo) to perform keyboard input simulation
 
