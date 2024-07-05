@@ -8,10 +8,15 @@ crate-type = ["cdylib"]
 
 [dependencies]
 arboard = "3.3.0"
-enigo = "0.2.0-rc2"
 # Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
 napi = { version = "2.12.2", default-features = false, features = ["napi4"] }
 napi-derive = "2.12.2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+core-graphics = "0.23.2"
+
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+enigo = "0.2.0-rc2"
 
 [build-dependencies]
 napi-build = "2.0.1"

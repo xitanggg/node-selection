@@ -3,7 +3,7 @@
 This package provides a simple Node.js util that allows you to retrieve user's current selection text on desktop.
 
 - Support Windows and Mac
-  - Mac: Need to grant accessibility permission to the calling app (`Settings` -> `Privacy & Security` -> `Accessibility`)
+  - Mac: Need to grant accessibility permission to the calling app (`Settings` -> `Privacy & Security` -> `Accessibility`) to call Apple's [Core Graphics framework](https://developer.apple.com/documentation/coregraphics) to post [CGEvent](https://developer.apple.com/documentation/coregraphics/cgevent) to simulate copy operation
 - Require Node.js >= 10
 
 ## 📦Installation
@@ -17,37 +17,62 @@ npm i @xitanggg/node-selection
 **Common Usage**
 
 ```typescript
-import { getSelectionText } from '@xitanggg/node-selection;
+import { getSelectionText } from '@xitanggg/node-selection';
 
 const selectionText = getSelectionText();
 ```
 
-**Customized Usage**
+**Custom Usage**
 
-`getSelectionText` accepts an optional `copyWaitTimeMs` input argument, which sets how long to wait after performing the copy operation before reading the clipboard text. It defaults to 5ms, which works for most use cases with small selection text. However, a larger value would be needed to support use case for large selection text that takes longer to copy.
+`getSelectionText` accepts an optional `timeOutMs` as its first input argument, which sets the max time to wait for selection text to appear in the clipboard during clipboard polling. It defaults to 80ms, and can be adjusted lower or higher depending on OS and use case. Smaller selection text is faster to copy while larger selection text takes longer.
 
 ```typescript
-import { getSelectionText } from '@xitanggg/node-selection;
+import { getSelectionText } from '@xitanggg/node-selection';
 
-const LONG_COPY_WAIT_TIME_MS = 10;
-const selectionText = getSelectionText(LONG_COPY_WAIT_TIME_MS);
+const LONGER_COPY_TIME_OUT_MS = 100;
+const selectionText = getSelectionText(LONGER_COPY_TIME_OUT_MS);
+```
+
+There is also an optional `printTimeToCopy` as its second input argument, which defaults to `false`, but if set to `true`, prints the time taken to copy selection text to clipboard to console. It can be useful for debugging and adjusting `timeOutMs` based on OS and use case.
+
+```typescript
+const PRINT_TIME_TO_COPY = true;
+const selectionText = getSelectionText(
+	LONGER_COPY_TIME_OUT_MS,
+	PRINT_TIME_TO_COPY
+);
 ```
 
 ## 💡Implementation
 
 **Core Logic**
 
-The implementation is written in Rust and is ~10 lines of code (see `/src/lib.rs` for full source code)
+The implementation is written in Rust and is ~150 lines of code in a single file `/src/lib.rs`.
 
-The selection text is retrieved in a 3 steps processes:
+The selection text is retrieved in a 6-step process:
 
-1. Save clipboard existing text and clear clipboard
-2. Simulate `Ctrl + C` (`Cmd + C` in Mac) keyboard input to copy selection text to clipboard
-3. Read clipboard to retrieve selection text and return it as result (The previous clipboard text is restored before returning to minimize side effects to users. Note: clipboard image/html restoration is not supported at the moment)
+1. Save clipboard existing text or image
+2. Clear clipboard
+3. Simulate `Ctrl + C` (`Cmd + C` in Mac) keyboard input to copy selection text to clipboard
+4. Poll clipboard to retrieve selection text in a loop every 1ms. The loop breaks if the selection text is found or it times out after 80ms by default
+5. Restore clipboard previous text or image to minimize side effects to users
+6. Return selection text as the result
 
 **Dependencies**
 
-It uses [Arboard (Arthur's Clipboard)](https://github.com/1Password/arboard) to perform clipboard operation and [enigo](https://github.com/enigo-rs/enigo) to perform keyboard input simulation
+For clipboard operation, it uses [Arboard (Arthur's Clipboard)](https://github.com/1Password/arboard).
+
+For keyboard input simulation, it uses [enigo](https://github.com/enigo-rs/enigo) in Windows, and [core-foundation-rs's core-graphics](https://github.com/servo/core-foundation-rs) in Mac.
+
+Arboard supports getting and setting clipboard text and image, which should satisfy most use cases. But it is worth noting that it doesn't support other clipboard contents, e.g. html, rtf, file. A `copy` method is provided for those who would like to implement custom logics to save and restore clipboard state or just want to call `Ctrl + C` (`Cmd + C` in Mac) to perform copy.
+
+```typescript
+import { copy } from '@xitanggg/node-selection';
+
+// Skip custom logics to save clipboard state
+copy();
+// Skip custom logics to poll clipboard and restore clipboard state
+```
 
 **Build & Distribution**
 

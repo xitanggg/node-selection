@@ -6,25 +6,35 @@
 /**
  * Returns the current selection text. If there is no selection text, returns an empty string.
  *
- * The selection text is retrieved in a 3 steps processes:
- * 1. Save clipboard existing text and clear clipboard
- * 2. Simulate `Ctrl + C` (`Cmd + C` in Mac) keyboard input to copy selection text to clipboard
- * 3. Read clipboard to retrieve selection text and return it as result
- * (The previous clipboard text is restored before returning to minimize side effects to users.
- *  Note: clipboard image/html restoration is not supported at the moment)
+ * The selection text is retrieved through a 6-step process:
+ * 1. Save clipboard existing text or image
+ * 2. Clear clipboard
+ * 3. Simulate `Ctrl + C` (`Cmd + C` in Mac) keyboard input to copy selection text to clipboard
+ * 4. Poll clipboard to retrieve selection text in a loop every 1ms. The loop breaks if the
+ *    selection text is found or it times out after 80ms by default
+ * 5. Restore clipboard previous text or image to minimize side effects to users
+ * 6. Return selection text as the result
  *
  * ##### Arguments
- * * `copyWaitTimeMs` - An optional number that sets how long to wait after performing the copy
- *                      operation before reading the clipboard text. It defaults to 5ms, which
- *                      works for most use cases with small selection text. However, a larger value
- *                      would be needed to support use case for large selection text that takes
- *                      longer to copy to the clipboard.
+ * * `timeOutMs` - An optional number that sets the max time to wait for selection text to
+ *                 appear in the clipboard during clipboard polling. Default to 80ms. Can be
+ *                 adjusted lower or higher depending on OS and use case. Smaller selection text
+ *                 is faster to copy while larger selection text takes longer.
+ * * `printTimeToCopy` - An optional boolean that if set to true, print the time taken to copy
+ *                       selection text to clipboard to console. Default to false. Useful for
+ *                       debugging and adjusting `timeOutMs`.
  */
-export function getSelectionText(copyWaitTimeMs?: number | undefined | null): string
+export declare function getSelectionText(timeOutMs?: number | undefined | null, printTimeToCopy?: boolean | undefined | null): string
 /**
- * Simulate Ctrl/Cmd + C keyboard input to copy selection text to clipboard
+ * Simulate `Ctrl + C` (`Cmd + C` in Mac) keyboard input to copy selection text to clipboard
  *
- * Useful if you only want to perform copy and handle clipboard saving and restoring yourself
- * so you can save & restore different clipboard data types e.g. text, html, image, etc.
+ * Useful for those who would like to implement custom logics to save and restore clipboard state
+ * or just want to perform copy
+ *
+ * As for implementation, Windows calls into Enigo to simulate keyboard input. But for Mac, it calls
+ * into Mac's Core Graphics CGEvent library directly to work around 2 issues with Enigo's current
+ * implementation, which causes additional delay (https://github.com/enigo-rs/enigo/issues/105)
+ * and subjects to mouse movement/keyboard interruption (https://github.com/enigo-rs/enigo/issues/201).
+ * Calling into CGEvent and setting event flag solves both issues.
  */
-export function copy(): void
+export declare function copy(): void
