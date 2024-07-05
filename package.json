@@ -1,6 +1,6 @@
 {
 	"name": "@xitanggg/node-selection",
-	"version": "1.2.0",
+	"version": "1.3.0",
 	"description": "Get user's current selection text on desktop in Node.js via Node-API native addon",
 	"main": "index.js",
 	"types": "index.d.ts",
